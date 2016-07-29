@@ -67,11 +67,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eww-jg-PjX">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="eww-jg-PjX">
                                 <rect key="frame" x="0.0" y="37" width="600" height="530"/>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="eww-jg-PjX" firstAttribute="top" secondItem="WKI-cx-9er" secondAttribute="bottom" constant="17" id="8vv-tr-omU"/>
+                            <constraint firstItem="eww-jg-PjX" firstAttribute="leading" secondItem="fD6-w2-FzP" secondAttribute="leadingMargin" constant="-20" id="9Ob-FQ-XuT"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="eww-jg-PjX" secondAttribute="trailing" constant="-20" id="GIU-sb-I6N"/>
+                            <constraint firstItem="uZW-TG-rMZ" firstAttribute="top" secondItem="eww-jg-PjX" secondAttribute="bottom" constant="33" id="bd0-ad-tDb"/>
+                        </constraints>
                     </view>
                     <connections>
                         <outlet property="imageView" destination="eww-jg-PjX" id="VTK-5I-Ne6"/>
