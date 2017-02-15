@@ -25,7 +25,6 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         return searchBar
     }()
 
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -135,6 +134,23 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
             self.navigationController?.pushViewController(singleImageViewController, animated: true)
         }
     }
+    
+    override func scrollViewDidScroll(scrollView: UIScrollView) {
+        let yOffSet = scrollView.contentOffset.y
+        let contentTrigger = scrollView.contentSize.height - scrollView.frame.size.height
+        print("scrollView: \(contentTrigger), yOffSet: \(yOffSet)")
+        if yOffSet > contentTrigger {
+            print("get more data")
+            photoSearchController!.fetchFlickrPhotosForTags("cat, cats, kitten", completion: { (result) -> Void in
+                print(result)
+                self.imageData = result
+                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                    self.collectionView?.reloadData()
+                })
+            })
+        }
+    }
+
 
 }
 
