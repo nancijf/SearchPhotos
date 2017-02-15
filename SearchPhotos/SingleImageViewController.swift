@@ -10,17 +10,17 @@ import UIKit
 
 class SingleImageViewController: UIViewController {
     
-    var imageData: [NSURL] = [NSURL]()
-    var imageCache: NSCache?
+    var imageData: [URL] = [URL]()
+    var imageCache = NSCache<AnyObject, UIImage>()
     var index: Int?
-    var indexPath: NSIndexPath?
+    var indexPath: IndexPath?
     
     @IBOutlet weak var imageView: UIImageView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let image = imageCache?.objectForKey(indexPath!) as? UIImage
+        let image = imageCache.object(forKey: indexPath! as AnyObject)! as UIImage
         
 //        if image!.size.width > image!.size.height {
 //            if image!.size.width > view.frame.size.width {

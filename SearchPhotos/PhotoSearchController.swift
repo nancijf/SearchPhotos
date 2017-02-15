@@ -45,20 +45,20 @@ enum FlickrAPIMethod: String {
 
 protocol FlickrPhoto {
     var photoDict: NSDictionary {get set}
-    func urlForPhotoWithSize(photoSize: PhotoSizes) -> NSURL
+    func urlForPhotoWithSize(_ photoSize: PhotoSizes) -> URL
 }
 
 struct Photo: FlickrPhoto {
     var photoDict: NSDictionary
     
-    func urlForPhotoWithSize(photoSize: PhotoSizes) -> NSURL {
+    func urlForPhotoWithSize(_ photoSize: PhotoSizes) -> URL {
         let farm = photoDict["farm"]
         let secret = photoDict["secret"]
         let serverId = photoDict["server"]
         let photoId = photoDict["id"]
         let photoSize = photoSize.rawValue
         
-        return NSURL(string: "https://farm\(farm!).staticflickr.com/\(serverId!)/\(photoId!)_\(secret!)_\(photoSize).jpg")!
+        return URL(string: "https://farm\(farm!).staticflickr.com/\(serverId!)/\(photoId!)_\(secret!)_\(photoSize).jpg")!
     }
 }
 
@@ -67,10 +67,10 @@ struct FlickrURL {
     var method: FlickrAPIMethod
     var perPage: Int
     
-    func withParams(params: [String: String]) -> NSURL {
+    func withParams(_ params: [String: String]) -> URL {
         let apiString = Parameters(parameters: ["method": "\(method.rawValue)", "per_page": "\(perPage)"]).parameterStringEncoded()
         let paramString = Parameters(parameters: params).parameterStringEncoded()
-        return NSURL(string: baseURL + apiString + "&" + paramString)!
+        return URL(string: baseURL + apiString + "&" + paramString)!
     }
 }
 
@@ -87,7 +87,7 @@ struct Parameters {
     
     func parameterStringEncoded() -> String
     {
-        return parameters.map({ "\($0)=\($1)" }).joinWithSeparator("&").stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!
+        return parameters.map({ "\($0)=\($1)" }).joined(separator: "&").addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
     }
 }
 
@@ -95,21 +95,21 @@ struct Parameters {
 class PhotoSearchController {
     
     
-    func fetchFlickrPhotosForTags(tags: String, completion: (result: [NSURL]) -> Void) {
+    func fetchFlickrPhotosForTags(_ tags: String, completion: @escaping (_ result: [URL]) -> Void) {
         
         let requestURL = FlickrURL(method: FlickrAPIMethod.photoSearch, perPage: 50).withParams(["api_key": "\(flickrAPIKey)", "tags": "\(tags)"])
-        let session = NSURLSession.sharedSession()
-        let task = session.dataTaskWithURL(requestURL, completionHandler: {data, response, error -> Void in
-            var urlArray = [NSURL]()
+        let session = URLSession.shared
+        let task = session.dataTask(with: requestURL, completionHandler: {data, response, error -> Void in
+            var urlArray = [URL]()
             do {
-                let jsonOptions: NSJSONReadingOptions = [.AllowFragments, .MutableLeaves, .MutableContainers]
-                let result = try NSJSONSerialization.JSONObjectWithData(data!, options: jsonOptions) as! [String: AnyObject]
+                let jsonOptions: JSONSerialization.ReadingOptions = [.allowFragments, .mutableLeaves, .mutableContainers]
+                let result = try JSONSerialization.jsonObject(with: data!, options: jsonOptions) as! [String: AnyObject]
                 if let photosDictionary = result["photos"] as? NSDictionary, let photos = photosDictionary["photo"] as? [NSDictionary] {
                     for photo in photos {
-                        let photoUrl: NSURL = Photo(photoDict: photo).urlForPhotoWithSize(PhotoSizes.Large1024)
+                        let photoUrl: URL = Photo(photoDict: photo).urlForPhotoWithSize(PhotoSizes.Large1024)
                         urlArray.append(photoUrl)
                     }
-                    completion(result: urlArray)
+                    completion(urlArray)
                 }
             }
             catch let jsonParseError {
