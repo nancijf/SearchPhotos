@@ -10,7 +10,7 @@ import UIKit
 
 class SingleImageViewController: UIViewController {
     
-    var imageData: [URL] = [URL]()
+    var imageData = [ImageRecord]()
     var imageCache = NSCache<AnyObject, UIImage>()
     var index: Int?
     var indexPath: IndexPath?

@@ -15,7 +15,7 @@ enum ImageRecordState {
 }
 
 class PendingOperations {
-    lazy var downloadsInProgress = [NSIndexPath:Operation]()
+    lazy var downloadsInProgress = [IndexPath:Operation]()
     lazy var downloadQueue:OperationQueue = {
         var queue = OperationQueue()
         queue.name = "Image Download queue"
@@ -63,11 +63,12 @@ class ImageDownloader: Operation {
 class ImageCollectionViewController: UICollectionViewController, UISearchBarDelegate {
     
     var photoSearchController: PhotoSearchController?
-    var imageData = [ImageRecord]()
-    var imageCache = NSCache<AnyObject, UIImage>()
+    var imageDataSource: [ImageRecord] = [ImageRecord]()
     var searchButton: UIBarButtonItem?
     var savedBackButton: UIBarButtonItem?
     var searchActive: Bool = false
+    
+    let pendingOperations = PendingOperations()
     
     lazy var searchBar: UISearchBar = {
         let searchBarWidth = self.view.frame.width * 0.75
@@ -87,7 +88,7 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         searchBar.delegate = self
         
         photoSearchController!.fetchFlickrPhotosForTags("cat, cats, kitten", completion: { (result) -> Void in
-            self.imageData = result
+            self.imageDataSource = result
             DispatchQueue.main.async(execute: { () -> Void in
                 self.collectionView?.reloadData()
             })
@@ -96,6 +97,35 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+    }
+    
+    func startOperationsForImageRecord(_ imageDetails: ImageRecord, indexPath: IndexPath) {
+        switch imageDetails.state {
+        case .new:
+            startDownloadForImageRecord(imageDetails, indexPath: indexPath)
+        default:
+            break
+        }
+    }
+    
+    func startDownloadForImageRecord(_ imageDetails: ImageRecord, indexPath: IndexPath) {
+        if let _ = pendingOperations.downloadsInProgress[indexPath] {
+            return
+        }
+        
+        let downloader = ImageDownloader(imageRecord: imageDetails)
+        
+        downloader.completionBlock = {
+            if downloader.isCancelled {
+                return
+            }
+            OperationQueue.main.addOperation {
+                self.pendingOperations.downloadsInProgress.removeValue(forKey: indexPath)
+                self.collectionView?.reloadItems(at: [indexPath])
+            }
+        }
+        pendingOperations.downloadsInProgress[indexPath] = downloader
+        pendingOperations.downloadQueue.addOperation(downloader)
     }
     
     // MARK: Search Photos
@@ -115,9 +145,8 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
             
             // Fetch the images from Flickr
             photoSearchController!.fetchFlickrPhotosForTags(searchText, completion: { (result) -> Void in
-                self.imageData.removeAll()
-                self.imageCache.removeAllObjects()
-                self.imageData = result
+                self.imageDataSource.removeAll()
+                self.imageDataSource = result
                 DispatchQueue.main.async(execute: { () -> Void in
                     self.collectionView?.reloadData()
                 })
@@ -140,43 +169,29 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of items
-        return imageData.count
+        return imageDataSource.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: kreuseIdentifier, for: indexPath) as? ImageCollectionViewCell
         cell?.imageStorage.layer.cornerRadius = 10.0
         
-//        guard let image = imageCache.object(forKey: indexPath as AnyObject) else {
-//            DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.high).async(execute: {
-//                if let url = self.imageData[indexPath.item] as URL? {
-//                    if let tempImage: Data? = try? Data(contentsOf: url), let _ = tempImage?.count, let image: UIImage? = UIImage(data: tempImage!) {
-//                        DispatchQueue.main.async(execute: {
-//                            cell?.imageStorage.image = image!
-//                            self.imageCache.setObject(image!, forKey: indexPath as AnyObject)
-//                         })
-//                    } else {
-//                        DispatchQueue.main.async(execute: {
-//                            cell?.imageStorage.image = UIImage(named: "BrokenImage")
-//                            self.imageCache.setObject(UIImage(named: "BrokenImage")!, forKey: indexPath as AnyObject)
-//                        })
-//                    }
-//                }
-//            })
-//            
-//            return cell!
-//        }
-    
-        // Configure the cell
-//        cell?.imageStorage.image = image as? UIImage
+        let imageDetails = imageDataSource[indexPath.row]
+        cell?.imageStorage.image = imageDetails.image
+        
+        switch imageDetails.state {
+        case .failed:
+            break
+        case .new, .downloaded:
+            self.startOperationsForImageRecord(imageDetails, indexPath: indexPath)
+        }
     
         return cell!
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let storyboard: UIStoryboard? = UIStoryboard(name: "Main", bundle: nil), let singleImageViewController = storyboard?.instantiateViewController(withIdentifier: "SingleImage") as? SingleImageViewController {
-            singleImageViewController.imageData = [imageData[indexPath.item]]
-//            singleImageViewController.imageCache = imageCache
+            singleImageViewController.imageData = [imageDataSource[indexPath.item]]
             singleImageViewController.index = indexPath.row
             singleImageViewController.indexPath = indexPath
             
@@ -189,7 +204,7 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         let contentTrigger = scrollView.contentSize.height - scrollView.frame.size.height
         if yOffSet > contentTrigger {
             photoSearchController!.fetchFlickrPhotosForTags("cat, cats, kitten", completion: { (result) -> Void in
-                self.imageData = result
+                self.imageDataSource = result
                 DispatchQueue.main.async(execute: { () -> Void in
                     self.collectionView?.reloadData()
                 })
