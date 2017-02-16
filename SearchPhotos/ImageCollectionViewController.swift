@@ -89,9 +89,9 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         
         photoSearchController!.fetchFlickrPhotosForTags("cat, cats, kitten", completion: { (result) -> Void in
             self.imageDataSource = result
-            DispatchQueue.main.async(execute: { () -> Void in
+            OperationQueue.main.addOperation {
                 self.collectionView?.reloadData()
-            })
+            }
         })
     }
 
@@ -147,9 +147,9 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
             photoSearchController!.fetchFlickrPhotosForTags(searchText, completion: { (result) -> Void in
                 self.imageDataSource.removeAll()
                 self.imageDataSource = result
-                DispatchQueue.main.async(execute: { () -> Void in
+                OperationQueue.main.addOperation {
                     self.collectionView?.reloadData()
-                })
+                }
             })
         }
     }
@@ -205,9 +205,9 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         if yOffSet > contentTrigger {
             photoSearchController!.fetchFlickrPhotosForTags("cat, cats, kitten", completion: { (result) -> Void in
                 self.imageDataSource = result
-                DispatchQueue.main.async(execute: { () -> Void in
+                OperationQueue.main.addOperation {
                     self.collectionView?.reloadData()
-                })
+                }
             })
         }
     }
