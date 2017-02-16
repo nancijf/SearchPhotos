@@ -34,16 +34,22 @@
                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="70w-lE-nrz">
                                             <rect key="frame" x="8" y="8" width="84" height="84"/>
                                         </imageView>
+                                        <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="vF2-fV-PVM">
+                                            <rect key="frame" x="40" y="40" width="20" height="20"/>
+                                        </activityIndicatorView>
                                     </subviews>
                                 </view>
                                 <constraints>
                                     <constraint firstAttribute="bottomMargin" secondItem="70w-lE-nrz" secondAttribute="bottom" id="2zu-xo-rng"/>
                                     <constraint firstAttribute="trailingMargin" secondItem="70w-lE-nrz" secondAttribute="trailing" id="D1I-ax-xvD"/>
                                     <constraint firstAttribute="topMargin" secondItem="70w-lE-nrz" secondAttribute="top" id="FFv-RV-eGv"/>
+                                    <constraint firstItem="vF2-fV-PVM" firstAttribute="centerX" secondItem="70w-lE-nrz" secondAttribute="centerX" id="Jh0-tG-ZeQ"/>
                                     <constraint firstAttribute="leadingMargin" secondItem="70w-lE-nrz" secondAttribute="leading" id="mgs-xt-r7q"/>
+                                    <constraint firstItem="vF2-fV-PVM" firstAttribute="centerY" secondItem="70w-lE-nrz" secondAttribute="centerY" id="zsT-WM-Ayb"/>
                                 </constraints>
                                 <connections>
                                     <outlet property="imageStorage" destination="70w-lE-nrz" id="QQb-iu-xEw"/>
+                                    <outlet property="indicator" destination="vF2-fV-PVM" id="aVH-GI-Hsy"/>
                                 </connections>
                             </collectionViewCell>
                         </cells>

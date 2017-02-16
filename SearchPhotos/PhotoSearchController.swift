@@ -98,7 +98,6 @@ class PhotoSearchController {
     func fetchFlickrPhotosForTags(_ tags: String, completion: @escaping (_ result: [ImageRecord]) -> Void) {
         
         let requestURL = FlickrURL(method: FlickrAPIMethod.photoSearch, perPage: 50).withParams(["api_key": "\(flickrAPIKey)", "tags": "\(tags)"])
-        UIApplication.shared.isNetworkActivityIndicatorVisible = true
         let session = URLSession.shared
         let task = session.dataTask(with: requestURL, completionHandler: {data, response, error -> Void in
             var photoArray = [ImageRecord]()
@@ -107,11 +106,9 @@ class PhotoSearchController {
                 let result = try JSONSerialization.jsonObject(with: data!, options: jsonOptions) as! [String: AnyObject]
                 if let photosDictionary = result["photos"] as? NSDictionary, let photos = photosDictionary["photo"] as? [NSDictionary] {
                     for photo in photos {
-                        print(photo)
                         let photoUrl: URL = Photo(photoDict: photo).urlForPhotoWithSize(PhotoSizes.Large1024)
                         let title = photo["title"] as? NSString ?? ""
                         let imageRecord = ImageRecord(name: title as String, url: photoUrl)
-                        print(photoUrl)
                         photoArray.append(imageRecord)
                     }
                     completion(photoArray)

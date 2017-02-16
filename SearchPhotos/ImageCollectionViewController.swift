@@ -67,6 +67,7 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
     var searchButton: UIBarButtonItem?
     var savedBackButton: UIBarButtonItem?
     var searchActive: Bool = false
+    var searchTags: String = "cat, cats, kitten"
     
     let pendingOperations = PendingOperations()
     
@@ -87,7 +88,7 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchFlickr))
         searchBar.delegate = self
         
-        photoSearchController!.fetchFlickrPhotosForTags("cat, cats, kitten", completion: { (result) -> Void in
+        photoSearchController!.fetchFlickrPhotosForTags(searchTags, completion: { (result) -> Void in
             self.imageDataSource = result
             OperationQueue.main.addOperation {
                 self.collectionView?.reloadData()
@@ -145,6 +146,7 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
             
             // Fetch the images from Flickr
             photoSearchController!.fetchFlickrPhotosForTags(searchText, completion: { (result) -> Void in
+                self.searchTags = searchText
                 self.imageDataSource.removeAll()
                 self.imageDataSource = result
                 OperationQueue.main.addOperation {
@@ -175,15 +177,19 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: kreuseIdentifier, for: indexPath) as? ImageCollectionViewCell
         cell?.imageStorage.layer.cornerRadius = 10.0
+        cell?.indicator.startAnimating()
         
         let imageDetails = imageDataSource[indexPath.row]
         cell?.imageStorage.image = imageDetails.image
         
         switch imageDetails.state {
         case .failed:
+            cell?.indicator.stopAnimating()
             break
-        case .new, .downloaded:
+        case .new:
             self.startOperationsForImageRecord(imageDetails, indexPath: indexPath)
+        case .downloaded:
+            cell?.indicator.stopAnimating()
         }
     
         return cell!
@@ -203,7 +209,7 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         let yOffSet = scrollView.contentOffset.y
         let contentTrigger = scrollView.contentSize.height - scrollView.frame.size.height
         if yOffSet > contentTrigger {
-            photoSearchController!.fetchFlickrPhotosForTags("cat, cats, kitten", completion: { (result) -> Void in
+            photoSearchController!.fetchFlickrPhotosForTags(searchTags, completion: { (result) -> Void in
                 self.imageDataSource = result
                 OperationQueue.main.addOperation {
                     self.collectionView?.reloadData()
@@ -212,15 +218,15 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         }
     }
 
-
 }
 
 class ImageCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var imageStorage: UIImageView!
+    @IBOutlet weak var indicator: UIActivityIndicatorView!
     
     override func prepareForReuse() {
-        let nothing: UIImage? = nil
-        imageStorage.image = nothing
+        indicator.stopAnimating()
+        imageStorage.image = nil
     }
 }
