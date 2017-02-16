@@ -10,10 +10,60 @@ import UIKit
 
 private let kreuseIdentifier = "imageViewCell"
 
+enum ImageRecordState {
+    case new, downloaded, failed
+}
+
+class PendingOperations {
+    lazy var downloadsInProgress = [NSIndexPath:Operation]()
+    lazy var downloadQueue:OperationQueue = {
+        var queue = OperationQueue()
+        queue.name = "Image Download queue"
+        return queue
+    }()
+}
+
+class ImageRecord {
+    let name: String
+    let url: URL
+    var state: ImageRecordState = .new
+    var image: UIImage?
+    
+    init(name: String, url:URL) {
+        self.name = name
+        self.url = url
+    }
+}
+
+class ImageDownloader: Operation {
+    let imageRecord: ImageRecord
+    
+    init(imageRecord: ImageRecord) {
+        self.imageRecord = imageRecord
+    }
+    
+    override func main() {
+        if self.isCancelled {
+            return
+        }
+        
+        if let imageData = try? Data(contentsOf: self.imageRecord.url) {
+            guard !self.isCancelled else { return }
+            if imageData.count > 0 {
+                self.imageRecord.image = UIImage(data: imageData)
+                self.imageRecord.state = .downloaded
+            } else {
+                self.imageRecord.state = .failed
+                self.imageRecord.image = UIImage(named: "BrokenImage")
+            }
+        }
+    }
+}
+
 class ImageCollectionViewController: UICollectionViewController, UISearchBarDelegate {
     
     var photoSearchController: PhotoSearchController?
-    var imageData: [URL] = [URL]()
+    var imageData = [ImageRecord]()
     var imageCache = NSCache<AnyObject, UIImage>()
     var searchButton: UIBarButtonItem?
     var savedBackButton: UIBarButtonItem?
@@ -97,36 +147,36 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: kreuseIdentifier, for: indexPath) as? ImageCollectionViewCell
         cell?.imageStorage.layer.cornerRadius = 10.0
         
-        guard let image = imageCache.object(forKey: indexPath as AnyObject) else {
-            DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.high).async(execute: {
-                if let url = self.imageData[indexPath.item] as URL? {
-                    if let tempImage: Data? = try? Data(contentsOf: url), let _ = tempImage?.count, let image: UIImage? = UIImage(data: tempImage!) {
-                        DispatchQueue.main.async(execute: {
-                            cell?.imageStorage.image = image!
-                            self.imageCache.setObject(image!, forKey: indexPath as AnyObject)
-                         })
-                    } else {
-                        DispatchQueue.main.async(execute: {
-                            cell?.imageStorage.image = UIImage(named: "BrokenImage")
-                            self.imageCache.setObject(UIImage(named: "BrokenImage")!, forKey: indexPath as AnyObject)
-                        })
-                    }
-                }
-            })
-            
-            return cell!
-        }
+//        guard let image = imageCache.object(forKey: indexPath as AnyObject) else {
+//            DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.high).async(execute: {
+//                if let url = self.imageData[indexPath.item] as URL? {
+//                    if let tempImage: Data? = try? Data(contentsOf: url), let _ = tempImage?.count, let image: UIImage? = UIImage(data: tempImage!) {
+//                        DispatchQueue.main.async(execute: {
+//                            cell?.imageStorage.image = image!
+//                            self.imageCache.setObject(image!, forKey: indexPath as AnyObject)
+//                         })
+//                    } else {
+//                        DispatchQueue.main.async(execute: {
+//                            cell?.imageStorage.image = UIImage(named: "BrokenImage")
+//                            self.imageCache.setObject(UIImage(named: "BrokenImage")!, forKey: indexPath as AnyObject)
+//                        })
+//                    }
+//                }
+//            })
+//            
+//            return cell!
+//        }
     
         // Configure the cell
-        cell?.imageStorage.image = image as? UIImage
+//        cell?.imageStorage.image = image as? UIImage
     
         return cell!
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let storyboard: UIStoryboard? = UIStoryboard(name: "Main", bundle: nil), let singleImageViewController = storyboard?.instantiateViewController(withIdentifier: "SingleImage") as? SingleImageViewController {
-            singleImageViewController.imageData = imageData
-            singleImageViewController.imageCache = imageCache
+            singleImageViewController.imageData = [imageData[indexPath.item]]
+//            singleImageViewController.imageCache = imageCache
             singleImageViewController.index = indexPath.row
             singleImageViewController.indexPath = indexPath
             

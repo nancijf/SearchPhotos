@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 let flickrAPIKey = "a042ffdf0983cfbdebef9929db566f50"
 
@@ -94,22 +95,26 @@ struct Parameters {
 
 class PhotoSearchController {
     
-    
-    func fetchFlickrPhotosForTags(_ tags: String, completion: @escaping (_ result: [URL]) -> Void) {
+    func fetchFlickrPhotosForTags(_ tags: String, completion: @escaping (_ result: [ImageRecord]) -> Void) {
         
         let requestURL = FlickrURL(method: FlickrAPIMethod.photoSearch, perPage: 50).withParams(["api_key": "\(flickrAPIKey)", "tags": "\(tags)"])
+        UIApplication.shared.isNetworkActivityIndicatorVisible = true
         let session = URLSession.shared
         let task = session.dataTask(with: requestURL, completionHandler: {data, response, error -> Void in
-            var urlArray = [URL]()
+            var photoArray = [ImageRecord]()
             do {
                 let jsonOptions: JSONSerialization.ReadingOptions = [.allowFragments, .mutableLeaves, .mutableContainers]
                 let result = try JSONSerialization.jsonObject(with: data!, options: jsonOptions) as! [String: AnyObject]
                 if let photosDictionary = result["photos"] as? NSDictionary, let photos = photosDictionary["photo"] as? [NSDictionary] {
                     for photo in photos {
+                        print(photo)
                         let photoUrl: URL = Photo(photoDict: photo).urlForPhotoWithSize(PhotoSizes.Large1024)
-                        urlArray.append(photoUrl)
+                        let title = photo["title"] as? NSString ?? ""
+                        let imageRecord = ImageRecord(name: title as String, url: photoUrl)
+                        print(photoUrl)
+                        photoArray.append(imageRecord)
                     }
-                    completion(urlArray)
+                    completion(photoArray)
                 }
             }
             catch let jsonParseError {
@@ -119,6 +124,5 @@ class PhotoSearchController {
         
         task.resume()
     }
-
     
 }
