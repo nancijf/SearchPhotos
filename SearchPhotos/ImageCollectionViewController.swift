@@ -163,6 +163,16 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         }
     }
     
+    // MARK: - Navigation
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowImage" {
+            if let cell: ImageCollectionViewCell = sender as? ImageCollectionViewCell, let destinationVC: SingleImageViewController = segue.destination as? SingleImageViewController {
+                destinationVC.imageToDisplay = cell.imageStorage.image
+            }
+        }
+    }
+    
 
     // MARK: UICollectionViewDataSource
 
@@ -194,16 +204,6 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         }
     
         return cell!
-    }
-    
-    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if let storyboard: UIStoryboard? = UIStoryboard(name: "Main", bundle: nil), let singleImageViewController = storyboard?.instantiateViewController(withIdentifier: "SingleImage") as? SingleImageViewController {
-            singleImageViewController.imageData = [imageDataSource[indexPath.item]]
-            singleImageViewController.index = indexPath.row
-            singleImageViewController.indexPath = indexPath
-            
-            self.navigationController?.pushViewController(singleImageViewController, animated: true)
-        }
     }
     
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {

@@ -11,18 +11,18 @@ import UIKit
 class SingleImageViewController: UIViewController {
     
     var imageData = [ImageRecord]()
-    var imageCache = NSCache<AnyObject, UIImage>()
     var index: Int?
     var indexPath: IndexPath?
+    var imageToDisplay: UIImage?
     
     @IBOutlet weak var imageView: UIImageView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let image = imageCache.object(forKey: indexPath! as AnyObject)! as UIImage
-        
-        imageView.image = image
+        if let image = imageToDisplay {
+            imageView.image = image
+        }
 
     }
 
