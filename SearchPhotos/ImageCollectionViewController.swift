@@ -90,12 +90,7 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
 
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchFlickr))
         
-        photoSearchController!.fetchFlickrPhotosForTags(searchTags, completion: { (result) -> Void in
-            self.imageDataSource = result
-            OperationQueue.main.addOperation {
-                self.collectionView?.reloadData()
-            }
-        })
+        loadPhotos()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -150,14 +145,9 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
     func getPhotos() {
         if let searchText = searchController.searchBar.text, searchText.characters.count > 0 {
             if let escapedText = searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-                photoSearchController!.fetchFlickrPhotosForTags(escapedText, completion: { (result) -> Void in
-                    self.searchTags = searchText
-                    self.imageDataSource.removeAll()
-                    self.imageDataSource = result
-                    OperationQueue.main.addOperation {
-                        self.collectionView?.reloadData()
-                    }
-                })
+                self.searchTags = searchText
+                self.imageDataSource.removeAll()
+                loadPhotos()
                 
             }
         }
@@ -210,13 +200,18 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         let yOffSet = scrollView.contentOffset.y
         let contentTrigger = scrollView.contentSize.height - scrollView.frame.size.height
         if yOffSet > contentTrigger {
-            photoSearchController!.fetchFlickrPhotosForTags(searchTags, completion: { (result) -> Void in
-                self.imageDataSource = result
-                OperationQueue.main.addOperation {
-                    self.collectionView?.reloadData()
-                }
-            })
+            loadPhotos()
         }
+    }
+    
+    func loadPhotos() {
+        photoSearchController!.fetchFlickrPhotosForTags(searchTags, completion: { (result) -> Void in
+            self.imageDataSource = result
+            OperationQueue.main.addOperation {
+                self.collectionView?.reloadData()
+            }
+            print("total images: \(self.imageDataSource.count)")
+        })
     }
 
 }
