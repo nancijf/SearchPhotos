@@ -18,33 +18,33 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="4" minimumInteritemSpacing="4" id="hHe-94-hsG">
-                            <size key="itemSize" width="100" height="100"/>
+                            <size key="itemSize" width="108" height="108"/>
                             <size key="headerReferenceSize" width="0.0" height="0.0"/>
                             <size key="footerReferenceSize" width="0.0" height="0.0"/>
                             <inset key="sectionInset" minX="4" minY="4" maxX="4" maxY="4"/>
                         </collectionViewFlowLayout>
                         <cells>
                             <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="imageViewCell" id="dLZ-Gm-KMf" customClass="ImageCollectionViewCell" customModule="SearchPhotos" customModuleProvider="target">
-                                <rect key="frame" x="4" y="4" width="100" height="100"/>
+                                <rect key="frame" x="4" y="4" width="108" height="108"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                    <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="108" height="108"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="70w-lE-nrz">
-                                            <rect key="frame" x="8" y="8" width="84" height="84"/>
+                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="70w-lE-nrz">
+                                            <rect key="frame" x="0.0" y="0.0" width="108" height="108"/>
                                         </imageView>
                                         <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="vF2-fV-PVM">
-                                            <rect key="frame" x="40" y="40" width="20" height="20"/>
+                                            <rect key="frame" x="44" y="44" width="20" height="20"/>
                                         </activityIndicatorView>
                                     </subviews>
                                 </view>
                                 <constraints>
-                                    <constraint firstAttribute="bottomMargin" secondItem="70w-lE-nrz" secondAttribute="bottom" id="2zu-xo-rng"/>
-                                    <constraint firstAttribute="trailingMargin" secondItem="70w-lE-nrz" secondAttribute="trailing" id="D1I-ax-xvD"/>
-                                    <constraint firstAttribute="topMargin" secondItem="70w-lE-nrz" secondAttribute="top" id="FFv-RV-eGv"/>
+                                    <constraint firstAttribute="bottomMargin" secondItem="70w-lE-nrz" secondAttribute="bottom" constant="-8" id="2zu-xo-rng"/>
+                                    <constraint firstAttribute="trailingMargin" secondItem="70w-lE-nrz" secondAttribute="trailing" constant="-8" id="D1I-ax-xvD"/>
+                                    <constraint firstAttribute="topMargin" secondItem="70w-lE-nrz" secondAttribute="top" constant="8" id="FFv-RV-eGv"/>
                                     <constraint firstItem="vF2-fV-PVM" firstAttribute="centerX" secondItem="70w-lE-nrz" secondAttribute="centerX" id="Jh0-tG-ZeQ"/>
-                                    <constraint firstAttribute="leadingMargin" secondItem="70w-lE-nrz" secondAttribute="leading" id="mgs-xt-r7q"/>
+                                    <constraint firstAttribute="leadingMargin" secondItem="70w-lE-nrz" secondAttribute="leading" constant="8" id="mgs-xt-r7q"/>
                                     <constraint firstItem="vF2-fV-PVM" firstAttribute="centerY" secondItem="70w-lE-nrz" secondAttribute="centerY" id="zsT-WM-Ayb"/>
                                 </constraints>
                                 <connections>
