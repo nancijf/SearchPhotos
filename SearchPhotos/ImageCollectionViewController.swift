@@ -69,6 +69,7 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
     var searchActive: Bool = false
     var searchTags: String = "cat, cats, kitten"
     let searchController = UISearchController(searchResultsController: nil)
+    var timer: Timer? = nil
     
     let pendingOperations = PendingOperations()
     
@@ -130,17 +131,13 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
     // MARK: Search Photos
     
     func updateSearchResults(for searchController: UISearchController) {
-        print(searchController.searchBar.text)
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(timeInterval: 0.2, target: self, selector: #selector(getPhotos), userInfo: nil, repeats: false)
     }
     
     func didPresentSearchController(_ searchController: UISearchController) {
         self.collectionView?.contentInset = UIEdgeInsetsMake(44, 0, 0, 0)
         searchController.isActive = true
-    }
-    
-    func didDismissSearchController(_ searchController: UISearchController) {
-//        searchController.isActive = false
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchFlickr))
     }
     
     func searchFlickr(_ sender: UIBarButtonItem) {
@@ -150,20 +147,21 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         searchController.isActive = true
     }
     
-//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//        if let searchText = searchBar.text {
-//            
-//            // Fetch the images from Flickr
-//            photoSearchController!.fetchFlickrPhotosForTags(searchText, completion: { (result) -> Void in
-//                self.searchTags = searchText
-//                self.imageDataSource.removeAll()
-//                self.imageDataSource = result
-//                OperationQueue.main.addOperation {
-//                    self.collectionView?.reloadData()
-//                }
-//            })
-//        }
-//    }
+    func getPhotos() {
+        if let searchText = searchController.searchBar.text, searchText.characters.count > 0 {
+            if let escapedText = searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+                photoSearchController!.fetchFlickrPhotosForTags(escapedText, completion: { (result) -> Void in
+                    self.searchTags = searchText
+                    self.imageDataSource.removeAll()
+                    self.imageDataSource = result
+                    OperationQueue.main.addOperation {
+                        self.collectionView?.reloadData()
+                    }
+                })
+                
+            }
+        }
+    }
     
 
     // MARK: UICollectionViewDataSource
