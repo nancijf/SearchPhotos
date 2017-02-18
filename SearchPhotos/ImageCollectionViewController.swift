@@ -60,7 +60,7 @@ class ImageDownloader: Operation {
     }
 }
 
-class ImageCollectionViewController: UICollectionViewController, UISearchBarDelegate {
+class ImageCollectionViewController: UICollectionViewController, UISearchBarDelegate, UISearchControllerDelegate, UISearchResultsUpdating {
     
     var photoSearchController: PhotoSearchController?
     var imageDataSource: [ImageRecord] = [ImageRecord]()
@@ -68,15 +68,10 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
     var savedBackButton: UIBarButtonItem?
     var searchActive: Bool = false
     var searchTags: String = "cat, cats, kitten"
+    let searchController = UISearchController(searchResultsController: nil)
     
     let pendingOperations = PendingOperations()
     
-    lazy var searchBar: UISearchBar = {
-        let searchBarWidth = self.view.frame.width * 0.75
-        let searchBar = UISearchBar(frame: CGRect(x: 0,y: 0,width: searchBarWidth,height: 20))
-        return searchBar
-    }()
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -85,8 +80,14 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
         layout.itemSize = CGSize(width: itemSize, height: itemSize)
         collectionView?.collectionViewLayout = layout
         
+        searchController.searchResultsUpdater = self
+        searchController.dimsBackgroundDuringPresentation = false
+        searchController.delegate = self
+        searchController.searchBar.delegate = self
+        searchController.searchBar.sizeToFit()
+        definesPresentationContext = false
+
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchFlickr))
-        searchBar.delegate = self
         
         photoSearchController!.fetchFlickrPhotosForTags(searchTags, completion: { (result) -> Void in
             self.imageDataSource = result
@@ -95,18 +96,15 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
             }
         })
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        view.addSubview(searchController.view)
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-    }
-    
-    func startOperationsForImageRecord(_ imageDetails: ImageRecord, indexPath: IndexPath) {
-        switch imageDetails.state {
-        case .new:
-            startDownloadForImageRecord(imageDetails, indexPath: indexPath)
-        default:
-            break
-        }
     }
     
     func startDownloadForImageRecord(_ imageDetails: ImageRecord, indexPath: IndexPath) {
@@ -131,37 +129,42 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
     
     // MARK: Search Photos
     
-    func searchFlickr(_ sender: UIBarButtonItem) {
-        savedBackButton = self.navigationItem.leftBarButtonItem
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: searchBar)
-        self.navigationItem.setRightBarButton(UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(hideSearch)), animated: true)
-        self.navigationItem.title = ""
-        searchBar.placeholder = "Search Flickr..."
-        searchActive = true
-        searchBar.becomeFirstResponder()
+    func updateSearchResults(for searchController: UISearchController) {
+        print(searchController.searchBar.text)
     }
     
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        if let searchText = searchBar.text {
-            
-            // Fetch the images from Flickr
-            photoSearchController!.fetchFlickrPhotosForTags(searchText, completion: { (result) -> Void in
-                self.searchTags = searchText
-                self.imageDataSource.removeAll()
-                self.imageDataSource = result
-                OperationQueue.main.addOperation {
-                    self.collectionView?.reloadData()
-                }
-            })
-        }
+    func didPresentSearchController(_ searchController: UISearchController) {
+        self.collectionView?.contentInset = UIEdgeInsetsMake(44, 0, 0, 0)
+        searchController.isActive = true
     }
     
-    func hideSearch(_ sender: UIBarButtonItem) {
-        self.navigationItem.leftBarButtonItem = savedBackButton
+    func didDismissSearchController(_ searchController: UISearchController) {
+//        searchController.isActive = false
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchFlickr))
-        searchActive = false
-        searchBar.resignFirstResponder()
     }
+    
+    func searchFlickr(_ sender: UIBarButtonItem) {
+        print("searchFlickr")
+        view.addSubview(searchController.view)
+        searchController.searchBar.placeholder = "Search Flickr..."
+        searchController.isActive = true
+    }
+    
+//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+//        if let searchText = searchBar.text {
+//            
+//            // Fetch the images from Flickr
+//            photoSearchController!.fetchFlickrPhotosForTags(searchText, completion: { (result) -> Void in
+//                self.searchTags = searchText
+//                self.imageDataSource.removeAll()
+//                self.imageDataSource = result
+//                OperationQueue.main.addOperation {
+//                    self.collectionView?.reloadData()
+//                }
+//            })
+//        }
+//    }
+    
 
     // MARK: UICollectionViewDataSource
 
@@ -187,7 +190,7 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
             cell?.indicator.stopAnimating()
             break
         case .new:
-            self.startOperationsForImageRecord(imageDetails, indexPath: indexPath)
+            self.startDownloadForImageRecord(imageDetails, indexPath: indexPath)
         case .downloaded:
             cell?.indicator.stopAnimating()
         }
