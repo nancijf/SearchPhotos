@@ -145,12 +145,22 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
     func getPhotos() {
         if let searchText = searchController.searchBar.text, searchText.characters.count > 0 {
             if let escapedText = searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-                self.searchTags = searchText
+                self.searchTags = escapedText
                 self.imageDataSource.removeAll()
                 loadPhotos()
                 
             }
         }
+    }
+    
+    func loadPhotos() {
+        photoSearchController!.fetchFlickrPhotosForTags(searchTags, completion: { (result) -> Void in
+            self.imageDataSource += result
+            OperationQueue.main.addOperation {
+                self.collectionView?.reloadData()
+            }
+            print("total images: \(self.imageDataSource.count)")
+        })
     }
     
     // MARK: - Navigation
@@ -199,21 +209,11 @@ class ImageCollectionViewController: UICollectionViewController, UISearchBarDele
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let yOffSet = scrollView.contentOffset.y
         let contentTrigger = scrollView.contentSize.height - scrollView.frame.size.height
-        if yOffSet > contentTrigger {
+        if yOffSet > contentTrigger && yOffSet > 0 {
             loadPhotos()
         }
     }
     
-    func loadPhotos() {
-        photoSearchController!.fetchFlickrPhotosForTags(searchTags, completion: { (result) -> Void in
-            self.imageDataSource = result
-            OperationQueue.main.addOperation {
-                self.collectionView?.reloadData()
-            }
-            print("total images: \(self.imageDataSource.count)")
-        })
-    }
-
 }
 
 class ImageCollectionViewCell: UICollectionViewCell {

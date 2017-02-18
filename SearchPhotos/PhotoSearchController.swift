@@ -92,7 +92,6 @@ struct Parameters {
     }
 }
 
-
 class PhotoSearchController {
     
     func fetchFlickrPhotosForTags(_ tags: String, completion: @escaping (_ result: [ImageRecord]) -> Void) {
@@ -121,5 +120,4 @@ class PhotoSearchController {
         
         task.resume()
     }
-    
 }
