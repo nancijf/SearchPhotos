@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import Alamofire
 
 let flickrAPIKey = "a042ffdf0983cfbdebef9929db566f50"
 
@@ -97,27 +98,27 @@ class PhotoSearchController {
     func fetchFlickrPhotosForTags(_ tags: String, completion: @escaping (_ result: [ImageRecord]) -> Void) {
         
         let requestURL = FlickrURL(method: FlickrAPIMethod.photoSearch, perPage: 50).withParams(["api_key": "\(flickrAPIKey)", "tags": "\(tags)"])
-        let session = URLSession.shared
-        let task = session.dataTask(with: requestURL, completionHandler: {data, response, error -> Void in
+        Alamofire.request(requestURL).validate().responseJSON(completionHandler: { (response) -> Void in
+            guard response.result.isSuccess else {
+                print("Error while fetching remote data: \(response.result.error)")
+                return
+            }
+            
+            guard let data = response.result.value as? [String: AnyObject],
+                let photoDictionary = data["photos"] as? NSDictionary, let photos = photoDictionary["photo"] as? [NSDictionary] else {
+                print("error in data")
+                return
+            }
+            
+            print(photos)
             var photoArray = [ImageRecord]()
-            do {
-                let jsonOptions: JSONSerialization.ReadingOptions = [.allowFragments, .mutableLeaves, .mutableContainers]
-                let result = try JSONSerialization.jsonObject(with: data!, options: jsonOptions) as! [String: AnyObject]
-                if let photosDictionary = result["photos"] as? NSDictionary, let photos = photosDictionary["photo"] as? [NSDictionary] {
-                    for photo in photos {
-                        let photoUrl: URL = Photo(photoDict: photo).urlForPhotoWithSize(PhotoSizes.Large1024)
-                        let title = photo["title"] as? NSString ?? ""
-                        let imageRecord = ImageRecord(name: title as String, url: photoUrl)
-                        photoArray.append(imageRecord)
-                    }
-                    completion(photoArray)
-                }
+            for photo in photos {
+                let photoUrl: URL = Photo(photoDict: photo).urlForPhotoWithSize(PhotoSizes.Large1024)
+                let title = photo["title"] as? NSString ?? ""
+                let imageRecord = ImageRecord(name: title as String, url: photoUrl)
+                photoArray.append(imageRecord)
             }
-            catch let jsonParseError {
-                print("error occurred \(jsonParseError)")
-            }
+            completion(photoArray)
         })
-        
-        task.resume()
     }
 }
