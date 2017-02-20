@@ -5,7 +5,7 @@ This iPhone app takes advantage of the Flickr API to search their public photos.
   - Updated to Swift 3.0
   - Now uses OperationQueue instead of GCD
   - Implemented UISearchController 
-  - Implemented continuous loading of images
+  - Implemented continuous scrolling of images
   
 ## Frameworks and APIs:
   - [Flickr API](https://www.flickr.com/services/developer/api/) to access the photos
