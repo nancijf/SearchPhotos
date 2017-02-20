@@ -6,5 +6,9 @@ This iPhone app takes advantage of the Flickr API to search their public photos.
   - Now uses OperationQueue instead of GCD
   - Implemented UISearchController 
   - Implemented continuous loading of images
+  
+## Frameworks and APIs:
+  - Flickr API(https://www.flickr.com/services/developer/api/) to access the photos
+  - Alamofire 4.3(https://github.com/Alamofire/Alamofire) to get JSON data
 
 
